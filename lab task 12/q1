@@ -1,0 +1,112 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+class Account {
+protected:
+    string accountNumber;
+    string accountHolderName;
+    double balance;
+    vector<string> transactionHistory;
+
+public:
+    Account(string accountNumber, string accountHolderName, double balance)
+        : accountNumber(accountNumber), accountHolderName(accountHolderName), balance(balance) {}
+
+    void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+            transactionHistory.push_back("Deposited: " + to_string(amount));
+        } else {
+            cout << "Deposit amount must be positive." << endl;
+        }
+    }
+
+    virtual void withdraw(double amount) {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+            transactionHistory.push_back("Withdrew: " + to_string(amount));
+        } else {
+            cout << "Insufficient funds or invalid withdrawal amount." << endl;
+        }
+    }
+
+    void displayAccountDetails() {
+        cout << "Account Number: " << accountNumber << endl;
+        cout << "Account Holder: " << accountHolderName << endl;
+        cout << "Balance: " << balance << endl;
+    }
+
+    void displayTransactionHistory() {
+        cout << "\nTransaction History for Account " << accountNumber << ":" << endl;
+        for (const string& transaction : transactionHistory) {
+            cout << transaction << endl;
+        }
+    }
+};
+
+class SavingsAccount : public Account {
+private:
+    double interestRate;
+
+public:
+    SavingsAccount(string accountNumber, string accountHolderName, double balance, double interestRate)
+        : Account(accountNumber, accountHolderName, balance), interestRate(interestRate) {}
+
+    void calculateInterest() {
+        double interest = (balance * interestRate) / 100;
+        balance += interest;
+        transactionHistory.push_back("Interest earned: " + to_string(interest));
+    }
+
+    void displayAccountDetails() {
+        Account::displayAccountDetails();
+        cout << "Interest Rate: " << interestRate << "%" << endl;
+    }
+};
+
+class CurrentAccount : public Account {
+private:
+    double overdraftLimit;
+
+public:
+    CurrentAccount(string accountNumber, string accountHolderName, double balance, double overdraftLimit)
+        : Account(accountNumber, accountHolderName, balance), overdraftLimit(overdraftLimit) {}
+
+    void withdraw(double amount) override {
+        if (amount > 0 && (balance - amount >= -overdraftLimit)) {
+            balance -= amount;
+            transactionHistory.push_back("Withdrew: " + to_string(amount));
+        } else {
+            cout << "Withdrawal exceeds overdraft limit." << endl;
+        }
+    }
+
+    void displayAccountDetails() {
+        Account::displayAccountDetails();
+        cout << "Overdraft Limit: " << overdraftLimit << endl;
+    }
+};
+
+int main() {
+    SavingsAccount savings("SA12345", "Joe", 1500.0, 5.0);
+    CurrentAccount current("CA67890", "Bbar", 550.0, 500.0);
+
+    savings.deposit(500.0);
+    savings.withdraw(200.0);
+    savings.calculateInterest();
+    savings.displayAccountDetails();
+    savings.displayTransactionHistory();
+
+    cout << "\n------------------------------------------------\n";
+
+    current.deposit(300.0);
+    current.withdraw(600.0);
+    current.withdraw(300.0);
+    current.displayAccountDetails();
+    current.displayTransactionHistory();
+
+    return 0;
+}
