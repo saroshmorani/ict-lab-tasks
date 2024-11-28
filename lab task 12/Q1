@@ -1,0 +1,109 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+class Person {
+protected:
+    string name;
+    int age;
+    string address;
+
+public:
+    Person(string name, int age, string address) 
+        : name(name), age(age), address(address) {}
+
+    virtual void displayDetails() {
+        cout << "Name: " << name << endl;
+        cout << "Age: " << age << endl;
+        cout << "Address: " << address << endl;
+    }
+};
+
+class Payable {
+public:
+    virtual double calculateSalary() = 0;
+};
+
+class Student : public Person {
+private:
+    string studentID;
+    vector<double> grades;
+
+public:
+    Student(string name, int age, string address, string studentID)
+        : Person(name, age, address), studentID(studentID) {}
+
+    void addGrade(double grade) {
+        grades.push_back(grade);
+    }
+
+    double calculateGPA() {
+        double sum = 0;
+        for (double grade : grades) {
+            sum += grade;
+        }
+        return grades.empty() ? 0 : sum / grades.size();
+    }
+
+    void displayDetails() override {
+        Person::displayDetails();
+        cout << "Student ID: " << studentID << endl;
+        cout << "Grades: ";
+        for (double grade : grades) {
+            cout << grade << " ";
+        }
+        cout << endl;
+        cout << "GPA: " << calculateGPA() << endl;
+    }
+};
+
+class Teacher : public Person, public Payable {
+private:
+    string teacherID;
+    string subject;
+    int numberOfClasses;
+    double ratePerClass;
+
+public:
+    Teacher(string name, int age, string address, string teacherID, string subject, int numberOfClasses, double ratePerClass)
+        : Person(name, age, address), teacherID(teacherID), subject(subject),
+          numberOfClasses(numberOfClasses), ratePerClass(ratePerClass) {}
+
+    void assignGrade(Student &student, double grade) {
+        student.addGrade(grade);
+    }
+
+    double calculateSalary() override {
+        return numberOfClasses * ratePerClass;
+    }
+
+    void displayDetails() override {
+        Person::displayDetails();
+        cout << "Teacher ID: " << teacherID << endl;
+        cout << "Subject: " << subject << endl;
+        cout << "Salary: " << calculateSalary() << endl;
+    }
+};
+
+int main() {
+    Teacher teacher("Mr. Johnson", 45, "123 Main St", "T001", "Math", 20, 50.0);
+
+    Student student1("Joe", 18, "456 Elm St", "S001");
+    Student student2("Babar", 19, "789 Oak St", "S002");
+
+    teacher.assignGrade(student1, 85.0);
+    teacher.assignGrade(student1, 90.0);
+    teacher.assignGrade(student2, 78.0);
+    teacher.assignGrade(student2, 88.0);
+
+    cout << "\n--- Student Details ---" << endl;
+    student1.displayDetails();
+    cout << "\n--- Student Details ---" << endl;
+    student2.displayDetails();
+    cout << "\n--- Teacher Details ---" << endl;
+    teacher.displayDetails();
+
+    return 0;
+}
